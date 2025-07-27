@@ -2,26 +2,25 @@ import Button from "./Button";
 import moods from "../assets/mood.js";
 
 export default function MoodFilter({ selectedGenre, toggleGenre }) {
-    return (
-        <section className="text-center mt-10 px-4">
-            <h1 className="text-4xl lg:text-5xl font-bold mb-3">
-                Discover Top-Rated Anime Based on Your Mood
-            </h1>
-            <p className="text-base lg:text-lg text-gray-400 mb-6">
-                How are you feeling right now?
-            </p>
+  return (
+    <div className="text-center px-4 py-8 text-white transition-all duration-300 ease-in-out">
+      <h1 className="text-4xl lg:text-5xl font-extrabold mb-4 tracking-wide bg-gradient-to-r from-purple-500 via-fuchsia-400 to-pink-500 bg-clip-text text-transparent">
+        Discover top-rated Anime based on your mood
+      </h1>
+      <p className="text-gray-400 text-lg mb-8 font-light">How are you feeling right now?</p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 place-items-center">
-                {Object.entries(moods).map(([mood, genre], index) => (
-                    <Button
-                        key={index}
-                        text={mood}
-                        className="btn-outline transition duration-200 hover:scale-105"
-                        onClick={() => toggleGenre(mood, genre)}
-                        aria-label={`Select mood: ${mood}`}
-                    />
-                ))}
-            </div>
-        </section>
-    );
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center">
+        {Object.entries(moods).map(([mood, genre], index) => (
+          <Button
+            key={index}
+            text={mood}
+            className={`w-full text-sm ${
+              selectedGenre.includes(genre) ? 'bg-purple-800' : 'btn-outline border-purple-500'
+            }`}
+            onClick={() => toggleGenre(mood, genre)}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
