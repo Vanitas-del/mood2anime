@@ -1,119 +1,107 @@
-import Button from "./Button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import MoodFilter from "./MoodFilter";
+import ContentList from "./ContentList";
+import NavBar from "./NavBar";
+import Footer from "./Footer";
 
-export default function ContentList({
-  animeList,
-  loading,
-  error,
-  page,
-  handleHideClick,
-  hiddenAnime,
-  handleNextPage,
-  handlePrevPage,
-}) {
-  const [copiedTitle, setCopiedTitle] = useState(null);
-  const filteredAnimeList = animeList.filter((anime) => !hiddenAnime.has(anime.mal_id));
+export default function ContentContainer() {
+  const [genres, setGenres] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  const [showAnimeContent, setShowAnimeContent] = useState(false);
+  const [animeList, setAnimeList] = useState([]);
+  const [page, setPage] = useState(1);
+  const [selectedMood, setSelectedMood] = useState('');
+  const [hiddenAnime, setHiddenAnime] = useState(new Set());
 
-  const handleCopyTitle = (title) => {
-    navigator.clipboard.writeText(title)
-      .then(() => {
-        setCopiedTitle(title);
-        setTimeout(() => setCopiedTitle(null), 2000);
-      })
-      .catch((err) => {
-        console.error("Failed to copy title: ", err);
-      });
+  useEffect(() => {
+    axios.get('https://api.jikan.moe/v4/genres/anime')
+      .then(response => setGenres(response.data.data))
+      .catch(err => console.error('Failed to fetch genres:', err));
+  }, []);
+
+  useEffect(() => {
+    setError(null);
+    setLoading(true);
+
+    axios.get('https://api.jikan.moe/v4/anime', {
+      params: {
+        order_by: 'popularity',
+        sort: 'asc',
+        limit: 1,
+        min_score: 7.5,
+        page,
+        unapproved: false,
+        ...(selectedGenres.includes('Highrated Anime this year')
+          ? { start_date: `${new Date().getFullYear()}-01-01` }
+          : selectedGenres.length > 0
+          ? { genres: selectedGenres.join(',') }
+          : {})
+      }
+    })
+    .then(response => setAnimeList(response.data.data))
+    .catch(err => console.error('Failed to fetch AnimeList:', err))
+    .finally(() => setLoading(false));
+  }, [page, selectedGenres]);
+
+  const toggleGenre = (moodName, genreName) => {
+    setSelectedGenres((prev) => {
+      if (genreName === 'Highrated Anime this year') {
+        return prev.includes(genreName) ? prev.filter((item) => item !== genreName) : [...prev, genreName];
+      }
+      const genreId = genres.find((genre) => genre.name === genreName)?.mal_id;
+      return genreId ? (prev.includes(genreId) ? prev.filter((id) => id !== genreId) : [...prev, genreId]) : prev;
+    });
+    setPage(1);
+    setShowAnimeContent(true);
+    setSelectedMood(moodName);
   };
 
-  if (loading) {
-    return (
-      <div className="text-center p-10 text-lg text-blue-500 animate-pulse">
-        Loading anime...
-      </div>
-    );
-  }
+  const handleBackButtonClick = () => {
+    setShowAnimeContent(false);
+    setSelectedGenres([]);
+    setSelectedMood('');
+  };
 
-  if (error) {
-    return (
-      <div className="text-center p-10 text-red-500 font-semibold">
-        {error}
-      </div>
-    );
-  }
+  const handleNextPage = () => setPage((p) => p + 1);
+  const handlePrevPage = () => setPage((p) => Math.max(p - 1, 1));
+
+  const handleHideClick = (animeId) => {
+    setHiddenAnime((prev) => {
+      const updatedSet = new Set(prev);
+      updatedSet.has(animeId) ? updatedSet.delete(animeId) : updatedSet.add(animeId);
+      return updatedSet;
+    });
+
+    if (animeList.length - 1 === [...hiddenAnime].indexOf(animeId)) {
+      handleNextPage();
+    }
+  };
 
   return (
-    <div className="w-full flex justify-center">
-      <div className="bg-white shadow-lg rounded-lg w-full max-w-2xl mt-4 p-4">
-        {filteredAnimeList.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="mb-4 text-gray-500">All anime on this page are hidden.</p>
-            <div className="flex justify-between">
-              <Button onClick={handlePrevPage} text="⬅️ Back" />
-              <Button onClick={handleNextPage} text="Next ➡️" />
-            </div>
-          </div>
-        ) : (
-          filteredAnimeList.map((anime) => (
-            <div key={anime.mal_id} className="mb-10">
-              <div className="aspect-video w-full rounded overflow-hidden mb-3">
-                {anime.trailer?.embed_url ? (
-                  <iframe
-                    className="w-full h-full"
-                    src={anime.trailer.embed_url}
-                    title={`${anime.title} Trailer`}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    referrerPolicy="strict-origin-when-cross-origin"
-                  />
-                ) : (
-                  <div className="text-center text-gray-400 py-10">
-                    Trailer not available.
-                  </div>
-                )}
-              </div>
+    <div className="min-h-screen bg-black text-white transition-all duration-300 ease-in-out">
+      <NavBar onBackClick={handleBackButtonClick} selectedMood={selectedMood} />
 
-              <div className="card-body space-y-3">
-                <div className="flex items-center justify-between">
-                  <h2
-                    className="text-xl font-bold cursor-pointer hover:underline"
-                    onClick={() => handleCopyTitle(anime.title)}
-                    title="Click to copy"
-                  >
-                    {anime.title}
-                  </h2>
-                  {copiedTitle === anime.title && (
-                    <span className="text-green-600 text-sm">Copied!</span>
-                  )}
-                </div>
+      {!showAnimeContent && (
+        <MoodFilter selectedGenre={selectedGenres} toggleGenre={toggleGenre} />
+      )}
 
-                <p className="text-sm text-gray-600">
-                  {anime.aired?.from ? new Date(anime.aired.from).getFullYear() : "N/A"}
-                  &nbsp; · &nbsp; {anime.episodes ?? "N/A"} ep
-                  &nbsp; · ⭐ {anime.score}
-                  &nbsp; · 🏆 Top {anime.popularity}
-                </p>
+      {showAnimeContent && (
+        <ContentList 
+          animeList={animeList}
+          loading={loading}
+          error={error}
+          page={page}
+          handleNextPage={handleNextPage}
+          handlePrevPage={handlePrevPage}
+          hiddenAnime={hiddenAnime}
+          handleHideClick={handleHideClick}
+        />
+      )}
 
-                <div className="flex flex-wrap gap-2">
-                  {anime.genres?.map((genre, index) => (
-                    <span key={index} className="badge badge-outline badge-secondary">
-                      {genre.name}
-                    </span>
-                  ))}
-                </div>
-
-                <p className="text-gray-700">{anime.synopsis?.split(".")[0] + "."}</p>
-
-                <div className="flex justify-between mt-4">
-                  <Button onClick={handlePrevPage} text="⬅️ Back" />
-                  <Button onClick={() => handleHideClick(anime.mal_id)} text="🙈 Hide" />
-                  <Button onClick={handleNextPage} text="Next ➡️" />
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <Footer />
     </div>
   );
 }
