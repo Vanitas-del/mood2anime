@@ -1,26 +1,27 @@
 import Button from "./Button";
-import moods from "../assets/mood.js"
+import moods from "../assets/mood.js";
 
-export default function MoodFilter({ selectedGenre , toggleGenre}) {
+export default function MoodFilter({ selectedGenre, toggleGenre }) {
     return (
-        <>
-            <h className="my-6 grid mood-center-container lg:text-5xl text-4xl font-bold">
-                Discover top-rated Anime based on your mood
-            </h>
-            <p>
+        <section className="text-center mt-10 px-4">
+            <h1 className="text-4xl lg:text-5xl font-bold mb-3">
+                Discover Top-Rated Anime Based on Your Mood
+            </h1>
+            <p className="text-base lg:text-lg text-gray-400 mb-6">
                 How are you feeling right now?
             </p>
 
-            <div class="grid lg:grid-cols-4 grid-cols-3 my-6 lg:gap-6 gap-4 mood-center-container">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 place-items-center">
                 {Object.entries(moods).map(([mood, genre], index) => (
-                    <Button key={index} text={mood} className={"btn-outline"}
-                    onClick={() => toggleGenre(mood, genre)}
-                    />                    
+                    <Button
+                        key={index}
+                        text={mood}
+                        className="btn-outline transition duration-200 hover:scale-105"
+                        onClick={() => toggleGenre(mood, genre)}
+                        aria-label={`Select mood: ${mood}`}
+                    />
                 ))}
             </div>
-
-
-
-        </>
-    )
+        </section>
+    );
 }
