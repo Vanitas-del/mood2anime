@@ -1,10 +1,11 @@
-export default function Footer() {
-  return (
-    <footer className="w-full border-t mt-10 bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300 py-4 text-center">
-      <p className="text-sm">
-        Made with ❤️ by&nbsp;
-        <span className="text-blue-600 dark:text-blue-400 font-semibold underline">Vanitas 👑</span>
-      </p>
-    </footer>
-  );
+export function Footer() {
+    return (
+        <footer className="footer footer-center bg-gradient-to-t from-base-200 to-base-100 text-base-content py-6 mt-10">
+            <aside>
+                <p className="text-sm text-gray-500">
+                    Made with ❤️ by <span className="text-primary font-semibold underline">Vanitas 👑</span>
+                </p>
+            </aside>
+        </footer>
+    );
 }
