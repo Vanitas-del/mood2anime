@@ -1,16 +1,14 @@
-import { motion } from "framer-motion";
-
 export default function Button({ onClick, disabled, className = "", text }) {
     return (
-        <motion.button
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.05 }}
+        <button
             type="button"
             onClick={onClick}
             disabled={disabled}
-            className={`px-5 py-2 rounded-xl font-semibold tracking-wide transition-all duration-300 ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary hover:text-white'} bg-white text-primary border border-primary`}
+            className={`bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition duration-200 px-5 py-2 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:cursor-not-allowed ${className}`}
         >
-            {text}
-        </motion.button>
+            <span className="text-white text-sm md:text-base font-semibold uppercase">
+                {text}
+            </span>
+        </button>
     );
 }
